@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="referrer" content="no-referrer">
+<meta name="robots" content="noindex,nofollow">
+<meta name="color-scheme" content="dark light">
+<title>pawnhubfans</title>
+<style>
+:root{--bg:#f1f2f9;--card:#fff;--text:#12132b;--muted:#555873;--acc:#4338ff;--pop:#ff4f86;--line:rgba(18,19,43,.1)}
+@media(prefers-color-scheme:dark){:root{--bg:#0b0c1c;--card:#171936;--text:#f2f3ff;--muted:#aeb1d0;--acc:#9a93ff;--line:rgba(255,255,255,.1)}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+a{color:inherit;text-decoration:none}button,input{font:inherit;color:inherit}
+header{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:12px;padding:12px 18px;background:color-mix(in srgb,var(--bg) 85%,transparent);backdrop-filter:blur(16px)}
+header b{font-size:19px;letter-spacing:-.04em}header nav{margin-left:auto;display:flex;gap:6px}
+.pill{border:0;border-radius:99px;padding:8px 16px;background:var(--card);box-shadow:0 0 0 1px var(--line);cursor:pointer;font-weight:600}
+.pill.on{background:var(--text);color:var(--bg)}
+main{max-width:1300px;margin:0 auto;padding:6px 18px 60px}
+h1{font-size:clamp(30px,7vw,52px);letter-spacing:-.05em;line-height:1;margin:18px 0 6px}
+p.sub{color:var(--muted);margin:0 0 18px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
+.tile{background:var(--card);border-radius:22px;padding:18px;box-shadow:0 0 0 1px var(--line);display:block}
+.tile b{font-size:18px}.tile small{display:block;color:var(--muted)}
+.bar{display:flex;gap:8px;margin:12px 0}
+.bar input{flex:1;min-width:0;border:0;border-radius:99px;padding:12px 18px;background:var(--card);box-shadow:0 0 0 1px var(--line);outline:0}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:4px 0 10px;scrollbar-width:none}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:22px 16px}
+.card{position:relative}
+.th{position:relative;aspect-ratio:16/9;border-radius:18px;overflow:hidden;background:var(--card);box-shadow:0 0 0 1px var(--line)}
+.th img{width:100%;height:100%;object-fit:cover;display:block}
+.dur{position:absolute;right:8px;bottom:8px;background:rgba(0,0,0,.72);color:#fff;border-radius:6px;padding:1px 7px;font-size:12px;font-weight:700}
+.card h3{font-size:14px;font-weight:600;margin:10px 4px 0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.card small{color:var(--muted);margin-left:4px}
+.fav{position:absolute;top:8px;right:8px;width:38px;height:38px;border:0;border-radius:50%;background:rgba(0,0,0,.55);color:#fff;font-size:18px;cursor:pointer}
+.fav.on{color:var(--pop)}
+.msg{text-align:center;color:var(--muted);margin:50px 0}
+.more{display:block;margin:30px auto}
+video{width:100%;max-height:78vh;background:#000;border-radius:22px;display:block}
+.back{display:inline-block;padding:10px 0;color:var(--muted);font-weight:600}
+.blur .th img{filter:blur(22px);transform:scale(1.2)}
+#age{position:fixed;inset:0;z-index:50;display:none;place-items:center;background:rgba(10,10,20,.85);backdrop-filter:blur(18px);padding:20px}
+#age .box{background:var(--card);border-radius:28px;padding:30px;max-width:380px;text-align:center}
+#age .pill{display:block;width:100%;margin-top:10px;padding:14px}
+</style>
+</head>
+<body>
+<header><a href="#/"><b>pawnhubfans</b></a>
+<nav><button class="pill" id="blurBtn">Blur</button><a class="pill" href="#/fav">♥ Favorites</a></nav></header>
+<main id="app"></main>
+<div id="age"><div class="box"><h2>18+ only</h2><p class="sub">This site contains adult content. Are you 18 or older?</p>
+<button class="pill on" id="yes">Yes, I'm 18 or older</button><a class="pill" href="https://www.google.com/">No, take me out</a></div></div>
+<script src="https://cdn.jsdelivr.net/npm/hls.js@1"></script>
+<script>
+const $=s=>document.querySelector(s),app=$("#app");
+const SRC=[["ph","Pornhub","Popular, hot, newest, top rated"],["desi","Desidekho","Latest videos and search"],["kissjav","VJAV","Latest videos and search"],["hstream","HStream","Latest videos and search"],["redgifs","RedGifs","Trending clips"]];
+const ORD={ph:[["","Popular"],["ht","Hot"],["cm","Newest"],["mv","Most viewed"],["tr","Top rated"]],redgifs:[["","Trending"],["new","Latest"],["top","Top"]]};
+const PFX={ph:"ph_",desi:"desi_",kissjav:"kj_",hstream:"hs_",redgifs:"rg_"};
+const ls=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))??d}catch(_){return d}};
+const lsw=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(_){}};
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+let tok=0;
+
+// age gate + blur
+if(!ls("pf_age",false))$("#age").style.display="grid";
+$("#yes").onclick=()=>{lsw("pf_age",true);$("#age").style.display="none"};
+document.body.classList.toggle("blur",ls("pf_blur",false));
+$("#blurBtn").onclick=()=>{const v=!document.body.classList.contains("blur");document.body.classList.toggle("blur",v);lsw("pf_blur",v)};
+
+const favs=()=>ls("pf_favs",[]);
+const isFav=k=>favs().some(f=>f.key===k);
+function toggleFav(it){let f=favs();f=isFav(it.key)?f.filter(x=>x.key!==it.key):[it,...f].slice(0,500);lsw("pf_favs",f)}
+
+function card(it){
+  const c=document.createElement("article");c.className="card";
+  c.innerHTML=`<a href="#/w/${encodeURIComponent(it.key)}?t=${encodeURIComponent(it.title)}"><div class="th">${it.thumb?`<img loading="lazy" decoding="async" alt="" src="${esc(it.thumb)}" onerror="this.remove()">`:""}${it.dur?`<span class="dur">${esc(it.dur)}</span>`:""}</div><h3>${esc(it.title)}</h3></a>${it.views?`<small>${esc(it.views)}</small>`:""}<button class="fav${isFav(it.key)?" on":""}" aria-label="Favorite">♥</button>`;
+  const b=c.querySelector(".fav");
+  b.onclick=()=>{toggleFav(it);b.classList.toggle("on",isFav(it.key))};
+  return c;
+}
+
+function home(){
+  app.innerHTML=`<h1>Browse</h1><p class="sub">Pick a catalog.</p><div class="tiles">${SRC.map(([id,n,d])=>`<a class="tile" href="#/s/${id}"><b>${n}</b><small>${d}</small></a>`).join("")}</div>`;
+}
+
+function favPage(){
+  const f=favs();
+  app.innerHTML=`<h1>Favorites</h1>${f.length?'<div class="grid" id="g"></div>':'<p class="msg">No favorites yet. Tap the heart on a video.</p>'}`;
+  if(f.length)f.forEach(it=>$("#g").append(card(it)));
+}
+
+function catalog(src,qs){
+  const meta=SRC.find(s=>s[0]===src);if(!meta)return home();
+  let q=qs.get("q")||"",o=qs.get("o")||"",page=1,busy=false,me=++tok;
+  const orders=ORD[src]||[];
+  app.innerHTML=`<a class="back" href="#/">← Catalog</a><h1>${meta[1]}</h1>
+  <form class="bar" id="f"><input id="q" type="search" placeholder="Search" value="${esc(q)}" autocomplete="off"><button class="pill on">Search</button></form>
+  <div class="chips" id="ch"></div><div class="grid" id="g"></div><p class="msg" id="m" hidden></p><button class="pill more" id="more" hidden>Load more</button>`;
+  const g=$("#g"),m=$("#m"),more=$("#more");
+  const chips=()=>{$("#ch").innerHTML="";orders.forEach(([v,l])=>{const b=document.createElement("button");b.className="pill"+(v===o?" on":"");b.textContent=l;b.onclick=()=>{o=v;chips();sync();load(true)};$("#ch").append(b)})};
+  const sync=()=>{const p=new URLSearchParams();if(q)p.set("q",q);if(o)p.set("o",o);history.replaceState(null,"","#/s/"+src+(p.toString()?"?"+p:""))};
+  async function load(reset){
+    if(busy&&!reset)return;busy=true;
+    if(reset){page=1;g.innerHTML="";}
+    m.hidden=false;m.textContent="Loading…";more.hidden=true;
+    try{
+      const r=await fetch("/api/catalog?"+new URLSearchParams({s:src,q,o,p:page}));
+      const d=await r.json().catch(()=>({}));
+      if(me!==tok)return;
+      if(!r.ok)throw new Error(d.error||"Couldn't load videos.");
+      d.items.forEach(it=>g.append(card(it)));
+      m.hidden=!!g.children.length;if(!g.children.length)m.textContent=q?"No videos found.":"Nothing to show.";
+      more.hidden=!d.more;page++;
+    }catch(e){if(me===tok){m.hidden=false;m.textContent=e.message}}
+    finally{busy=false}
+  }
+  $("#f").onsubmit=e=>{e.preventDefault();q=$("#q").value.trim();sync();load(true)};
+  more.onclick=()=>load(false);
+  chips();load(true);
+}
+
+function watch(key,title){
+  app.innerHTML=`<a class="back" href="javascript:history.back()">← Back</a><video id="v" controls playsinline autoplay></video><h2 style="margin:14px 4px">${esc(title||"")}</h2><p class="msg" id="m">Loading…</p>`;
+  const v=$("#v"),m=$("#m"),me=++tok;let hls=null;
+  fetch("/api/watch?k="+encodeURIComponent(key)).then(r=>r.json().then(d=>({ok:r.ok,d}))).then(({ok,d})=>{
+    if(me!==tok)return;
+    if(!ok){m.textContent=d.error||"Couldn't load this video.";return}
+    const list=d.sources.slice();m.hidden=true;
+    if(key.startsWith("rg_"))v.loop=true;
+    const next=()=>{
+      if(hls){hls.destroy();hls=null}
+      const s=list.shift();
+      if(!s){m.hidden=false;m.textContent="This video can't be played right now.";return}
+      if(s.t==="hls"&&!v.canPlayType("application/vnd.apple.mpegurl")&&window.Hls&&Hls.isSupported()){
+        hls=new Hls();hls.loadSource(s.u);hls.attachMedia(v);
+        hls.on(Hls.Events.ERROR,(_,e)=>{if(e.fatal)next()});
+      }else v.src=s.u;
+      v.play().catch(()=>{});
+    };
+    v.onerror=next;next();
+  }).catch(()=>{m.textContent="Couldn't load this video."});
+}
+
+function route(){
+  tok++;window.scrollTo(0,0);
+  const [path,query]=location.hash.slice(1).split("?"),qs=new URLSearchParams(query||""),p=path.split("/").filter(Boolean);
+  if(p[0]==="s")catalog(p[1],qs);
+  else if(p[0]==="w")watch(decodeURIComponent(p[1]||""),qs.get("t")||"");
+  else if(p[0]==="fav")favPage();
+  else home();
+}
+addEventListener("hashchange",route);route();
+</script>
+</body>
+</html>
